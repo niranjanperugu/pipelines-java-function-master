@@ -35,3 +35,10 @@ steps:
   inputs:
     artifactName: 'war'
     pathToPublish: '$(build.artifactStagingDirectory)'
+- task: AzureFunctionApp@1
+  inputs:
+    azureSubscription: 'Pay-As-You-Go(dec03485-2fd5-483f-a4bd-11bf66bc0230)'
+    appType: 'functionApp'
+    appName: 'emom-test-pipeline'
+    package: '$(System.DefaultWorkingDirectory)/**/*.zip'
+    deploymentMethod: 'auto'
