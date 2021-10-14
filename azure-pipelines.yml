@@ -1,13 +1,10 @@
 # Maven
-# Build your Java project and run tests with Apache Maven.
+# Build your Java projects and run tests with Apache Maven.
 # Add steps that analyze code, save build artifacts, deploy, and more:
 # https://docs.microsoft.com/azure/devops/pipelines/languages/java
 
-trigger:
-- master
-
 pool:
-  vmImage: ubuntu-latest
+  vmImage: 'Ubuntu 16.04'
 
 steps:
 - task: Maven@3
@@ -18,12 +15,23 @@ steps:
     jdkVersionOption: '1.8'
     jdkArchitectureOption: 'x64'
     publishJUnitResults: true
-    testResultsFiles: '**/surefire-reports/TEST-*.xml'
+    testResultsFiles: '**/TEST-*.xml'
     goals: 'package'
-- task: AzureFunctionApp@1
+
+# Publish Cobertura or JaCoCo code coverage results from a build
+- task: PublishCodeCoverageResults@1
   inputs:
-    azureSubscription: 'Pay-As-You-Go(dec03485-2fd5-483f-a4bd-11bf66bc0230)'
-    appType: 'functionApp'
-    appName: 'emom-test-pipeline'
-    package: '$(System.DefaultWorkingDirectory)/**/*.zip'
-    deploymentMethod: 'auto'
+    codeCoverageTool: 'JaCoCo' 
+    summaryFileLocation: '$(System.DefaultWorkingDirectory)/**/site/jacoco/jacoco.xml'
+    reportDirectory: '$(System.DefaultWorkingDirectory)/**/site/jacoco'
+    failIfCoverageEmpty: true
+
+- task: CopyFiles@2
+  inputs:
+    contents: '**/*.war'
+    targetFolder: '$(build.artifactStagingDirectory)'
+
+- task: PublishBuildArtifacts@1
+  inputs:
+    artifactName: 'war'
+    pathToPublish: '$(build.artifactStagingDirectory)'
